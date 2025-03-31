@@ -13,8 +13,4 @@
         <PackageReference Include="MudBlazor" Version="8.5.0" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Auth-Service\" />
-    </ItemGroup>
-
 </Project>

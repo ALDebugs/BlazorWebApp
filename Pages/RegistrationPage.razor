@@ -1,0 +1,88 @@
+﻿@page "/registration"
+@using System.ComponentModel.DataAnnotations
+
+<PageTitle>Register</PageTitle>
+
+<div class="row">
+        <div class="col-lg-6">
+            <StatusMessage Message="@_message"/>
+            <EditForm Model="@Input" asp-route-returnUrl="@ReturnUrl" method="post" OnValidSubmit="@HandleRegistration" FormName="register">
+                <DataAnnotationsValidator/>
+                <h2>Create a new account.</h2>
+                <hr/>
+                <ValidationSummary class="text-danger" role="alert"/>
+                <div class="form-floating mb-3">
+                    <InputText @bind-Value="Input.Email" id="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com"/>
+                    <label for="Input.Email">Email</label>
+                    <ValidationMessage For="() => Input.Email" class="text-danger"/>
+                </div>
+                <div class="form-floating mb-3">
+                <InputText @bind-Value="Input.Username" id="Input.Username" class="form-control" autocomplete="username" aria-required="true" placeholder="name"/>
+                <label for="Input.Username">Username</label>
+                <ValidationMessage For="() => Input.Username" class="text-danger"/>
+            </div>
+                <div class="form-floating mb-3">
+                    <InputText type="password" @bind-Value="Input.Password" id="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password"/>
+                    <label for="Input.Password">Password</label>
+                    <ValidationMessage For="() => Input.Password" class="text-danger"/>
+                </div>
+                <div class="form-floating mb-3">
+                    <InputText type="password" @bind-Value="Input.ConfirmPassword" id="Input.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password"/>
+                    <label for="Input.ConfirmPassword">Confirm Password</label>
+                    <ValidationMessage For="() => Input.ConfirmPassword" class="text-danger"/>
+                </div>
+                <button type="submit" class="w-100 btn btn-lg btn-primary">Register</button>
+            </EditForm>
+        </div>
+    </div>
+@code {
+    [SupplyParameterFromForm] private InputModel Input { get; set; } = new();
+    [SupplyParameterFromForm] private string? ReturnUrl { get; set; }
+    private string? _message;
+    
+    private async Task HandleRegistration()
+    {
+        try
+        {
+            var success = await Js.InvokeAsync<bool>(
+                "auth.registerUser", Input.Email, Input.Password, Input.Username);
+            
+            _message = (success ? "Registration successful!" : "Registration failed.");
+           
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+    }
+
+    private sealed class InputModel
+    {
+        [MaxLength(30)]
+        [Required(ErrorMessage = "Email is required.")]
+        [EmailAddress(ErrorMessage = "Invalid email address.")]
+        [Display(Name = "Email")]
+        public string Email { get; set; } = "";
+        
+        [MaxLength(15)]
+        [Required(ErrorMessage = "Username is required.")]
+        [EmailAddress(ErrorMessage = "Invalid username.")]
+        [Display(Name = "Username")]
+        public string Username { get; set; } = "";
+        
+        [MaxLength(20)]
+        [Required(ErrorMessage = "Password is required.")]
+        [MinLength(6, ErrorMessage = "Password must be at least 6 characters long.")]
+        [DataType(DataType.Password)]
+        [Display(Name = "Password")]
+        public string Password { get; set; } = "";
+
+        [MaxLength(20)]
+        [DataType(DataType.Password)]
+        [Display(Name = "Confirm password")]
+        [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
+        public string ConfirmPassword { get; set; } = "";
+    }
+
+}

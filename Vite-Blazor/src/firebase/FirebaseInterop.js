@@ -15,13 +15,13 @@ window.data =
         handleFetch,
         setupInvListener
     }
-export const registerUser = async (email, password) =>
+export const registerUser = async (email, password, username) =>
 {
     try 
     {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
-        user.displayName = email.split(/[@._-]/)[0];
+        user.displayName = (username == null || username === "") ? email.split(/[@._-]/)[0] : username;
         return true;
     }
     catch (error)
