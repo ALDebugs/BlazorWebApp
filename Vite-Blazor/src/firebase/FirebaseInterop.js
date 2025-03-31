@@ -2,12 +2,26 @@ import { auth, db } from "./config.js";
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from 'firebase/auth';
 import { collection, addDoc, getDocs, onSnapshot, query, where, deleteDoc, doc, setDoc } from 'firebase/firestore';
 
-
+window.auth =
+    {
+        registerUser,
+        loginUser,
+        logoutUser,
+        monitorAuthState
+    };
+window.data =
+    {
+        handleItem,
+        handleFetch,
+        setupInvListener
+    }
 export const registerUser = async (email, password) =>
 {
     try 
     {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+        user.displayName = email.split(/[@._-]/)[0];
         return true;
     }
     catch (error)
@@ -112,10 +126,36 @@ export const handleFetch = async (task) =>
                 const locations = new Set();
                 const categories = new Set();
                 
+                querySnap.forEach((doc) =>
+                {
+                    const data = doc.data();
+                    if (data.location) locations.add(data.location);
+                    if (data.category) categories.add(data.category)
+                });
+                
+                return [Array.from(locations), Array.from(categories)];
         }
     }
     catch (error)
     {
-        console.error(`Error fetching ${action}: ${error.code}, ${error.message}`)
+        console.error(`Error fetching ${task}: ${error.code}, ${error.message}`)
+    }
+}
+
+export const setupInvListener = async (dotNetObj, filterName) =>
+{
+    try
+    {
+        const collectionRef = collection(db, "Inventory/LWHInv/Items");
+        if (filterName)
+        {
+            // TODO:: set up filtering 
+        }
+
+        
+    }
+    catch (error)
+    {
+        console.error(`Error filtering (${filterName}): ${error.code}, ${error.message}`)
     }
 }
